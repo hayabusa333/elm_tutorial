@@ -1,58 +1,54 @@
 module Main exposing (..)
 
-import Html exposing (Html, program)
-import Widget
+import Html exposing (Html, div, text, program)
+import Mouse
+import Keyboard
 
 -- モデル
 
-type alias AppModel =
-  { widgetModel : Widget.Model
-  }
+type alias Model =
+  Int
 
-initialModel : AppModel
-initialModel =
-  { widgetModel = Widget.initialModel
-  }
-
-init : ( AppModel, Cmd Msg )
+init : ( Model, Cmd Msg )
 init =
-  ( initialModel, Cmd.none )
+  ( 0, Cmd.none )
 
 -- メッセージ
 
 type Msg
-  = WidgetMsg Widget.Msg
+  = MouseMsg Mouse.Position
+  | KeyMsg Keyboard.KeyCode
 
--- ビュー
+-- VIEW
 
-view : AppModel -> Html Msg
+view : Model -> Html Msg
 view model =
-  Html.div []
-    [ Html.map WidgetMsg (Widget.view model.widgetModel)
-    ]
+  div []
+    [ text (toString model) ]
 
 -- 更新
 
-update : Msg -> AppModel -> ( AppModel, Cmd Msg )
-update message model =
-  case message of
-    WidgetMsg subMsg ->
-      let
-        ( updatedWidgetModel, widgetCmd ) =
-          Widget.update subMsg model.widgetModel
-      in
-        ( { model | widgetModel = updatedWidgetModel }, Cmd.map WidgetMsg widgetCmd )
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+  case msg of
+    MouseMsg position ->
+      ( model + 1, Cmd.none )
 
+    KeyMsg code ->
+      ( model + 2, Cmd.none )
 
 -- サブスクリプション
 
-subscriptions : AppModel -> Sub Msg
+subscriptions : Model -> Sub Msg
 subscriptions model =
-  Sub.none
+  Sub.batch
+    [ Mouse.clicks MouseMsg
+    , Keyboard.downs KeyMsg
+    ]
 
--- APP
+-- MAIN
 
-main : Program Never AppModel Msg
+main : Program Never Model Msg
 main =
   program
     { init = init
